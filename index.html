@@ -76,12 +76,11 @@
     <!-- 数据来源说明 -->
     <div class="mb-5 glass rounded-xl px-5 py-3 flex flex-wrap gap-4 items-center justify-between text-xs">
         <div class="flex flex-wrap gap-4">
-            <span><span class="text-green-400 font-medium">🟢 绿色</span> <span class="text-slate-400">= Finnhub/东方财富真实数据</span></span>
-            <span><span class="text-yellow-400 font-medium">🟡 黄色</span> <span class="text-slate-400">= Yahoo备用数据</span></span>
-            <span><span class="text-red-400 font-medium">🔴 红色</span> <span class="text-slate-400">= 接口失败，使用fallback</span></span>
+            <span><span class="text-green-400 font-medium">🟢 绿色</span> <span class="text-slate-400">= 真实数据（Finnhub/Yahoo/东方财富）</span></span>
+            <span><span class="text-red-400 font-medium">🔴 红色</span> <span class="text-slate-400">= 接口失败，使用参考价格</span></span>
         </div>
         <div class="text-slate-500">
-            国际行情: <span class="text-blue-400">Finnhub</span> · 汇率: <span class="text-blue-400">ExchangeRate-API</span> · 国内: <span class="text-blue-400">东方财富</span>
+            国际: <span class="text-blue-400">Finnhub→Yahoo</span> · 汇率: <span class="text-blue-400">ExchangeRate-API</span> · 国内: <span class="text-blue-400">东方财富</span>
         </div>
     </div>
 
@@ -89,9 +88,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="glass rounded-xl p-5 glow">
             <div class="text-slate-400 text-xs mb-1">USD/CNY 实时汇率</div>
-            <div class="text-2xl font-bold mono text-white" id="val-fx">
-                <span class="shimmer rounded text-transparent select-none">7.2500</span>
-            </div>
+            <div class="text-2xl font-bold mono text-white" id="val-fx">--</div>
             <div class="text-xs text-slate-500 mt-1" id="fx-time">--</div>
         </div>
         <div class="glass rounded-xl p-5 glow">
@@ -145,7 +142,7 @@
         <div class="flex justify-between items-center mb-4">
             <div>
                 <h3 class="text-base font-semibold text-white">溢价率实时走势</h3>
-                <p class="text-xs text-slate-500 mt-0.5">每次刷新记录一个真实数据点</p>
+                <p class="text-xs text-slate-500 mt-0.5">每次刷新记录一个数据点</p>
             </div>
             <div class="flex gap-2">
                 <button onclick="changeTimeframe('1H')" class="time-btn px-3 py-1 rounded text-xs bg-blue-600 text-white">1H</button>
@@ -157,11 +154,9 @@
 
     <!-- Calculator -->
     <div class="mt-8 glass rounded-xl p-6">
-        <div class="flex justify-between items-start mb-4">
-            <div>
-                <h3 class="text-base font-semibold text-white">套利计算器</h3>
-                <p class="text-xs text-slate-500 mt-0.5">汇率自动同步 · 点击品种卡片「套利计算」可自动填入当前价格</p>
-            </div>
+        <div class="mb-4">
+            <h3 class="text-base font-semibold text-white">套利计算器</h3>
+            <p class="text-xs text-slate-500 mt-0.5">汇率自动同步 · 点击品种卡片「套利计算」可自动填入当前价格</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
@@ -191,103 +186,77 @@
     </div>
 
     <div class="mt-6 text-center text-xs text-slate-600">
-        数据来源: Finnhub · ExchangeRate-API · 东方财富 · 仅供参考，不构成投资建议
+        数据来源: Finnhub · Yahoo Finance · ExchangeRate-API · 东方财富 · 仅供参考，不构成投资建议
     </div>
 </main>
 
 <script>
-// ─────────────────────────────────────────────────────────────
-// 品种配置（与 api/prices.js 的 SYMBOL_MAP 对应）
-// ─────────────────────────────────────────────────────────────
+// ─── 品种配置 ───────────────────────────────────────────────
 const PAIRS = [
-    {
-        id:'crude-oil',  category:'energy',    name:'原油期货',
-        dom:{ exchange:'INE',   unit:'元/桶' },
-        intl:{ exchange:'NYMEX', unit:'美元/桶',  symbol:'CL' },
-        conversion:1, fxKey:'CNY', desc:'WTI原油 vs 上海原油',
-        fallback:{ dom:535, intl:73 }
-    },
-    {
-        id:'gold',       category:'metal',     name:'黄金期货',
-        dom:{ exchange:'SHFE',  unit:'元/克' },
-        intl:{ exchange:'COMEX', unit:'美元/盎司', symbol:'GC' },
-        conversion:31.1035, fxKey:'CNY', desc:'COMEX黄金 vs 沪金',
-        fallback:{ dom:625, intl:2750 }
-    },
-    {
-        id:'silver',     category:'metal',     name:'白银期货',
-        dom:{ exchange:'SHFE',  unit:'元/千克' },
-        intl:{ exchange:'COMEX', unit:'美元/盎司', symbol:'SI' },
-        conversion:32.1507, fxKey:'CNY', desc:'COMEX白银 vs 沪银',
-        fallback:{ dom:8500, intl:31.5 }
-    },
-    {
-        id:'copper',     category:'metal',     name:'铜期货',
-        dom:{ exchange:'SHFE',  unit:'元/吨' },
-        intl:{ exchange:'COMEX', unit:'美元/磅',  symbol:'HG' },
-        conversion:2204.62, fxKey:'CNY', desc:'COMEX铜 vs 沪铜',
-        fallback:{ dom:78000, intl:4.45 }
-    },
-    {
-        id:'aluminum',   category:'metal',     name:'铝期货',
-        dom:{ exchange:'SHFE',  unit:'元/吨' },
-        intl:{ exchange:'LME',  unit:'美元/磅',  symbol:'ALI' },
-        conversion:2204.62, fxKey:'CNY', desc:'COMEX铝 vs 沪铝',
-        fallback:{ dom:20000, intl:1.18 }
-    },
-    {
-        id:'soybean',    category:'agri',      name:'大豆期货',
-        dom:{ exchange:'DCE',   unit:'元/吨' },
-        intl:{ exchange:'CBOT', unit:'美分/蒲式耳', symbol:'ZS' },
-        conversion:0.367437/100, fxKey:'CNY', desc:'CBOT大豆 vs 豆一',
-        fallback:{ dom:3800, intl:980 }
-    },
-    {
-        id:'corn',       category:'agri',      name:'玉米期货',
-        dom:{ exchange:'DCE',   unit:'元/吨' },
-        intl:{ exchange:'CBOT', unit:'美分/蒲式耳', symbol:'ZC' },
-        conversion:0.393683/100, fxKey:'CNY', desc:'CBOT玉米 vs 大商所玉米',
-        fallback:{ dom:2300, intl:450 }
-    },
-    {
-        id:'wheat',      category:'agri',      name:'强麦期货',
-        dom:{ exchange:'ZCE',   unit:'元/吨' },
-        intl:{ exchange:'CBOT', unit:'美分/蒲式耳', symbol:'ZW' },
-        conversion:0.367437/100, fxKey:'CNY', desc:'CBOT小麦 vs 郑商所强麦',
-        fallback:{ dom:2600, intl:540 }
-    },
-    {
-        id:'csi300',     category:'financial', name:'股指期货',
-        dom:{ exchange:'CFFEX', unit:'点' },
-        intl:{ exchange:'CME',  unit:'点',       symbol:'ES' },
-        conversion:1, fxKey:'CNY', desc:'标普E-mini vs 沪深300',
-        fallback:{ dom:3800, intl:5800 }
-    },
-    {
-        id:'bond10y',    category:'financial', name:'国债期货',
-        dom:{ exchange:'CFFEX', unit:'元' },
-        intl:{ exchange:'CME',  unit:'美元',     symbol:'ZN' },
-        conversion:1, fxKey:'CNY', desc:'10年期美债 vs 中国国债',
-        fallback:{ dom:104, intl:109 }
-    }
+    { id:'crude-oil',  category:'energy',    name:'原油期货',
+      dom:{ exchange:'INE',   unit:'元/桶' },
+      intl:{ exchange:'NYMEX', unit:'美元/桶',     symbol:'CL' },
+      conversion:1,            fxKey:'CNY', desc:'WTI原油 vs 上海原油',
+      fallback:{ dom:535, intl:73 } },
+    { id:'gold',       category:'metal',     name:'黄金期货',
+      dom:{ exchange:'SHFE',  unit:'元/克' },
+      intl:{ exchange:'COMEX', unit:'美元/盎司',   symbol:'GC' },
+      conversion:31.1035,      fxKey:'CNY', desc:'COMEX黄金 vs 沪金',
+      fallback:{ dom:625, intl:2750 } },
+    { id:'silver',     category:'metal',     name:'白银期货',
+      dom:{ exchange:'SHFE',  unit:'元/千克' },
+      intl:{ exchange:'COMEX', unit:'美元/盎司',   symbol:'SI' },
+      conversion:32.1507,      fxKey:'CNY', desc:'COMEX白银 vs 沪银',
+      fallback:{ dom:8500, intl:31.5 } },
+    { id:'copper',     category:'metal',     name:'铜期货',
+      dom:{ exchange:'SHFE',  unit:'元/吨' },
+      intl:{ exchange:'COMEX', unit:'美元/磅',     symbol:'HG' },
+      conversion:2204.62,      fxKey:'CNY', desc:'COMEX铜 vs 沪铜',
+      fallback:{ dom:78000, intl:4.45 } },
+    { id:'aluminum',   category:'metal',     name:'铝期货',
+      dom:{ exchange:'SHFE',  unit:'元/吨' },
+      intl:{ exchange:'LME',   unit:'美元/磅',     symbol:'ALI' },
+      conversion:2204.62,      fxKey:'CNY', desc:'COMEX铝 vs 沪铝',
+      fallback:{ dom:20000, intl:1.18 } },
+    { id:'soybean',    category:'agri',      name:'大豆期货',
+      dom:{ exchange:'DCE',   unit:'元/吨' },
+      intl:{ exchange:'CBOT',  unit:'美分/蒲式耳', symbol:'ZS' },
+      conversion:0.367437/100, fxKey:'CNY', desc:'CBOT大豆 vs 豆一',
+      fallback:{ dom:3800, intl:980 } },
+    { id:'corn',       category:'agri',      name:'玉米期货',
+      dom:{ exchange:'DCE',   unit:'元/吨' },
+      intl:{ exchange:'CBOT',  unit:'美分/蒲式耳', symbol:'ZC' },
+      conversion:0.393683/100, fxKey:'CNY', desc:'CBOT玉米 vs 大商所玉米',
+      fallback:{ dom:2300, intl:450 } },
+    { id:'wheat',      category:'agri',      name:'强麦期货',
+      dom:{ exchange:'ZCE',   unit:'元/吨' },
+      intl:{ exchange:'CBOT',  unit:'美分/蒲式耳', symbol:'ZW' },
+      conversion:0.367437/100, fxKey:'CNY', desc:'CBOT小麦 vs 郑商所强麦',
+      fallback:{ dom:2600, intl:540 } },
+    { id:'csi300',     category:'financial', name:'股指期货',
+      dom:{ exchange:'CFFEX', unit:'点' },
+      intl:{ exchange:'CME',   unit:'点',          symbol:'ES' },
+      conversion:1,            fxKey:'CNY', desc:'标普E-mini vs 沪深300',
+      fallback:{ dom:3800, intl:5800 } },
+    { id:'bond10y',    category:'financial', name:'国债期货',
+      dom:{ exchange:'CFFEX', unit:'元' },
+      intl:{ exchange:'CME',   unit:'美元',        symbol:'ZN' },
+      conversion:1,            fxKey:'CNY', desc:'10年期美债 vs 中国国债',
+      fallback:{ dom:104, intl:109 } }
 ];
 
-// ─────────────────────────────────────────────────────────────
-// 全局状态
-// ─────────────────────────────────────────────────────────────
+// ─── 全局状态 ────────────────────────────────────────────────
 const S = {
     fx:      { CNY:7.25, JPY:149.5 },
-    data:    [],          // 渲染用数据
-    history: {},          // id -> [{t,v}]
+    data:    [],
+    history: {},
     filter:  'all',
     sort:    'premium-desc',
     chart:   null,
-    n:       0            // 刷新次数
+    n:       0
 };
 
-// ─────────────────────────────────────────────────────────────
-// 启动
-// ─────────────────────────────────────────────────────────────
+// ─── 启动 ────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initClock();
     initChart();
@@ -296,9 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(refresh, 30000);
 });
 
-// ─────────────────────────────────────────────────────────────
-// 时钟 & 市场状态
-// ─────────────────────────────────────────────────────────────
+// ─── 时钟 ────────────────────────────────────────────────────
 function initClock() {
     setInterval(() => {
         const now = new Date();
@@ -310,16 +277,15 @@ function initClock() {
     }, 1000);
 }
 
-// ─────────────────────────────────────────────────────────────
-// 主刷新：并发调用 /api/fx 和 /api/prices
-// ─────────────────────────────────────────────────────────────
+// ─── 主刷新：并发调用三个接口 ────────────────────────────────
 async function refresh() {
     setLoading(true);
     try {
-        const [fxRes, pricesRes] = await Promise.allSettled([
-            fetch('/api/fx').then(r=>r.json()),
-            // prices.js 接口：传所有需要的 symbol，逗号分隔
-            fetch('/api/prices?symbols=CL,GC,SI,HG,ALI,ZS,ZC,ZW,ES,ZN').then(r=>r.json())
+        // ★ 同时请求：汇率 + 国际行情 + 国内行情（三个并发）
+        const [fxRes, pricesRes, domRes] = await Promise.allSettled([
+            fetch('/api/fx').then(r => r.json()),
+            fetch('/api/prices?symbols=CL,GC,SI,HG,ALI,ZS,ZC,ZW,ES,ZN').then(r => r.json()),
+            fetch('/api/domestic').then(r => r.json())
         ]);
 
         // ── 处理汇率 ──
@@ -332,38 +298,47 @@ async function refresh() {
             document.getElementById('badge-fx').textContent = 'USD/CNY: ' + rates.CNY.toFixed(4);
             document.getElementById('badge-fx').className = 'px-2 py-1 rounded-full text-xs mono badge-live';
         } else {
-            document.getElementById('val-fx').textContent = S.fx.CNY.toFixed(4) + '*';
-            document.getElementById('badge-fx').textContent = '汇率: 备用';
+            document.getElementById('val-fx').textContent = S.fx.CNY.toFixed(4) + ' *';
+            document.getElementById('badge-fx').textContent = '汇率: 备用值';
             document.getElementById('badge-fx').className = 'px-2 py-1 rounded-full text-xs mono badge-mock';
         }
 
-        // ── 处理行情 ──
-        // prices.js 返回格式: { success, data: { CL: {price,change,high,low,...}, ... } }
+        // ── 处理国际行情 ──
         let priceMap = {};
-        let pricesLive = false;
         if (pricesRes.status === 'fulfilled' && pricesRes.value.success) {
             priceMap = pricesRes.value.data || {};
-            pricesLive = true;
+        }
+
+        // ── ★ 处理国内行情（东方财富）──
+        let domMap = {};
+        if (domRes.status === 'fulfilled' && domRes.value.success) {
+            domMap = domRes.value.data || {};
         }
 
         // ── 组装渲染数据 ──
-        let liveCount = 0;
+        let intlLiveCount = 0;
+        let domLiveCount  = 0;
+
         S.data = PAIRS.map(pair => {
-            const intlRaw = priceMap[pair.intl.symbol];
+            // 国际价格
+            const intlRaw    = priceMap[pair.intl.symbol];
             const intlPrice  = intlRaw?.price  || pair.fallback.intl;
             const intlChange = intlRaw?.change  || 0;
-            const intlSrc    = intlRaw ? 'live' : 'fallback';
+            const intlSrc    = (intlRaw && intlRaw.source !== 'error') ? intlRaw.source : 'fallback';
 
-            // 国内价格暂用 fallback（东方财富后续可加入 api/domestic.js）
-            const domPrice  = pair.fallback.dom * (1 + (Math.random()-0.5)*0.002);
-            const domChange = (Math.random()-0.5)*0.5;
-            const domSrc    = 'fallback';
+            // ★ 国内价格（来自东方财富，不再写死）
+            const domRaw    = domMap[pair.intl.symbol];
+            const domPrice  = domRaw?.price  ?? pair.fallback.dom;
+            const domChange = domRaw?.change  ?? 0;
+            const domSrc    = (domRaw && domRaw.source !== 'error' && domRaw.source !== 'fallback')
+                                ? domRaw.source : 'fallback';
 
-            const fxRate = pair.fxKey === 'JPY' ? (S.fx.CNY / S.fx.JPY) : S.fx.CNY;
+            const fxRate    = pair.fxKey === 'JPY' ? (S.fx.CNY / S.fx.JPY) : S.fx.CNY;
             const converted = intlPrice * fxRate * pair.conversion;
-            const premium = converted > 0 ? ((domPrice - converted) / converted * 100) : 0;
+            const premium   = converted > 0 ? ((domPrice - converted) / converted * 100) : 0;
 
-            if (intlSrc === 'live') liveCount++;
+            if (intlSrc !== 'fallback') intlLiveCount++;
+            if (domSrc  !== 'fallback') domLiveCount++;
 
             // 记录历史
             if (!S.history[pair.id]) S.history[pair.id] = [];
@@ -374,12 +349,16 @@ async function refresh() {
         });
 
         S.n++;
-        document.getElementById('val-live').textContent  = liveCount;
+        const totalLive = Math.max(intlLiveCount, domLiveCount);
+        document.getElementById('val-live').textContent  = totalLive;
         document.getElementById('val-total').textContent = PAIRS.length;
-        document.getElementById('val-refresh-time').textContent = `第${S.n}次 · ${new Date().toLocaleTimeString('zh-CN')}`;
-        document.getElementById('badge-mkt').textContent = `行情: ${liveCount}/${PAIRS.length} 实时`;
+        document.getElementById('val-refresh-time').textContent =
+            `第${S.n}次 · ${new Date().toLocaleTimeString('zh-CN')}`;
+        document.getElementById('badge-mkt').textContent =
+            `国际${intlLiveCount}/${PAIRS.length} · 国内${domLiveCount}/${PAIRS.length}`;
         document.getElementById('badge-mkt').className =
-            'px-2 py-1 rounded-full text-xs ' + (liveCount > 5 ? 'badge-live' : liveCount > 0 ? 'badge-mock' : 'badge-err');
+            'px-2 py-1 rounded-full text-xs ' +
+            (intlLiveCount > 5 ? 'badge-live' : intlLiveCount > 0 ? 'badge-mock' : 'badge-err');
 
         renderGrid();
         renderStats();
@@ -402,9 +381,7 @@ function setLoading(on) {
 
 async function manualRefresh() { await refresh(); }
 
-// ─────────────────────────────────────────────────────────────
-// 渲染卡片
-// ─────────────────────────────────────────────────────────────
+// ─── 渲染卡片 ────────────────────────────────────────────────
 function renderGrid() {
     let items = [...S.data];
     if (S.filter !== 'all') items = items.filter(d => d.category === S.filter);
@@ -413,18 +390,23 @@ function renderGrid() {
     else items.sort((a,b) => a.name.localeCompare(b.name));
 
     const grid = document.getElementById('futures-grid');
-    if (!items.length) { grid.innerHTML = `<div class="col-span-2 text-center py-16 text-slate-500">该分类暂无数据</div>`; return; }
+    if (!items.length) {
+        grid.innerHTML = `<div class="col-span-2 text-center py-16 text-slate-500">该分类暂无数据</div>`;
+        return;
+    }
 
     grid.innerHTML = items.map(d => {
-        const pos    = d.premium > 0;
-        const pCls   = pos ? 'text-green-400' : 'text-red-400';
-        const bCls   = pos ? 'border-green-500/20 bg-green-500/5' : 'border-red-500/20 bg-red-500/5';
-        const pulse  = Math.abs(d.premium) > 2 ? (pos ? 'pulse-up' : 'pulse-down') : '';
-        const domDot = d.domSrc  === 'live' ? '🟢' : (d.domSrc  === 'fallback' ? '🔴' : '🟡');
-        const intlDot= d.intlSrc === 'live' ? '🟢' : (d.intlSrc === 'fallback' ? '🔴' : '🟡');
-        const fmt    = v => v >= 1000 ? v.toLocaleString('zh-CN',{maximumFractionDigits:2}) : v.toFixed(v>=10?2:4);
-        const chgStr = (v,src) => src==='fallback'
-            ? `<span class="text-slate-600">--</span>`
+        const pos     = d.premium > 0;
+        const pCls    = pos ? 'text-green-400' : 'text-red-400';
+        const bCls    = pos ? 'border-green-500/20 bg-green-500/5' : 'border-red-500/20 bg-red-500/5';
+        const pulse   = Math.abs(d.premium) > 2 ? (pos ? 'pulse-up' : 'pulse-down') : '';
+        const domDot  = d.domSrc  !== 'fallback' ? '🟢' : '🔴';
+        const intlDot = d.intlSrc !== 'fallback' ? '🟢' : '🔴';
+        const fmt     = v => v >= 1000
+            ? v.toLocaleString('zh-CN',{maximumFractionDigits:2})
+            : v.toFixed(v >= 10 ? 2 : 4);
+        const chgStr  = (v, src) => src === 'fallback'
+            ? `<span class="text-slate-600">休市/参考价</span>`
             : `<span class="${v>=0?'text-green-400':'text-red-400'}">${v>=0?'↑':'↓'} ${Math.abs(v).toFixed(2)}%</span>`;
 
         return `
@@ -462,7 +444,7 @@ function renderGrid() {
             </div>
             <div class="flex justify-between text-xs text-slate-600 border-t border-slate-700/40 pt-2 mb-3">
                 <span>汇率: <span class="text-slate-400 mono">${d.fxRate.toFixed(4)}</span></span>
-                <span>换算比: ×${d.conversion >= 1 ? d.conversion.toFixed(2) : d.conversion.toFixed(5)}</span>
+                <span>换算: ×${d.conversion >= 1 ? d.conversion.toFixed(2) : d.conversion.toFixed(5)}</span>
             </div>
             <div class="flex gap-2">
                 <button onclick="calcFill('${d.id}')" class="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs">套利计算</button>
@@ -472,36 +454,34 @@ function renderGrid() {
     }).join('');
 }
 
-// ─────────────────────────────────────────────────────────────
-// 统计
-// ─────────────────────────────────────────────────────────────
+// ─── 统计 ────────────────────────────────────────────────────
 function renderStats() {
     if (!S.data.length) return;
     const premiums = S.data.map(d => d.premium);
     const avg = premiums.reduce((a,b)=>a+b,0) / premiums.length;
     const maxItem = S.data.reduce((a,b) => Math.abs(b.premium) > Math.abs(a.premium) ? b : a);
     document.getElementById('val-avg-premium').textContent = (avg>0?'+':'') + avg.toFixed(2) + '%';
-    document.getElementById('val-avg-premium').className = 'text-2xl font-bold ' + (avg>0?'text-green-400':'text-red-400');
+    document.getElementById('val-avg-premium').className =
+        'text-2xl font-bold ' + (avg>0?'text-green-400':'text-red-400');
     document.getElementById('val-max-arb').textContent = Math.abs(maxItem.premium).toFixed(2) + '%';
     document.getElementById('val-max-name').textContent = maxItem.name;
 }
 
-// ─────────────────────────────────────────────────────────────
-// Ticker
-// ─────────────────────────────────────────────────────────────
+// ─── Ticker ──────────────────────────────────────────────────
 function renderTicker() {
     const items = S.data.map(d => {
         const color = d.premium > 0 ? '#4ade80' : '#f87171';
-        const dot   = d.intlSrc === 'live' ? '🟢' : '🔴';
-        return `${dot} <span style="color:#94a3b8">${d.name}</span> <span style="color:${color};font-weight:600">${d.premium>0?'+':''}${d.premium.toFixed(2)}%</span> 国内:${d.domPrice.toLocaleString('zh-CN',{maximumFractionDigits:1})} 国际:${d.intlPrice.toFixed(2)}`;
+        const dot   = d.intlSrc !== 'fallback' ? '🟢' : '🔴';
+        return `${dot} <span style="color:#94a3b8">${d.name}</span> `+
+               `<span style="color:${color};font-weight:600">${d.premium>0?'+':''}${d.premium.toFixed(2)}%</span> `+
+               `国内:${d.domPrice.toLocaleString('zh-CN',{maximumFractionDigits:1})} `+
+               `国际:${d.intlPrice.toFixed(2)}`;
     });
     const txt = items.join(' &nbsp;·&nbsp; ');
     document.getElementById('ticker').innerHTML = txt + ' &nbsp;·&nbsp; ' + txt;
 }
 
-// ─────────────────────────────────────────────────────────────
-// 图表
-// ─────────────────────────────────────────────────────────────
+// ─── 图表 ────────────────────────────────────────────────────
 const CHART_IDS    = ['gold','crude-oil','copper','soybean','csi300','silver'];
 const CHART_COLORS = ['#f59e0b','#60a5fa','#f97316','#4ade80','#a78bfa','#94a3b8'];
 
@@ -515,10 +495,12 @@ function initChart() {
             interaction: { mode:'index', intersect:false },
             plugins: {
                 legend: { labels: { color:'#94a3b8', boxWidth:12, font:{size:11} } },
-                tooltip: { backgroundColor:'#1e293b', borderColor:'#475569', borderWidth:1, titleColor:'#e2e8f0', bodyColor:'#94a3b8' }
+                tooltip: { backgroundColor:'#1e293b', borderColor:'#475569', borderWidth:1,
+                           titleColor:'#e2e8f0', bodyColor:'#94a3b8' }
             },
             scales: {
-                y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10}}, title:{display:true,text:'溢价率 %',color:'#64748b'} },
+                y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10}},
+                     title:{display:true,text:'溢价率 %',color:'#64748b'} },
                 x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10},maxTicksLimit:10} }
             }
         }
@@ -552,22 +534,20 @@ function changeTimeframe(tf) {
     });
 }
 
-// ─────────────────────────────────────────────────────────────
-// 过滤 & 排序
-// ─────────────────────────────────────────────────────────────
+// ─── 过滤 & 排序 ─────────────────────────────────────────────
 function setFilter(cat) {
     S.filter = cat;
     document.querySelectorAll('.filter-btn').forEach(b => {
         b.className = 'filter-btn px-4 py-2 rounded-lg text-sm font-medium ' +
-            (b.dataset.cat===cat ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+            (b.dataset.cat===cat
+                ? 'bg-blue-600 text-white'
+                : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
     });
     renderGrid();
 }
 function setSort(v) { S.sort = v; renderGrid(); }
 
-// ─────────────────────────────────────────────────────────────
-// 套利计算器
-// ─────────────────────────────────────────────────────────────
+// ─── 套利计算器 ──────────────────────────────────────────────
 function initCalc() {
     const sel = document.getElementById('calc-pair');
     PAIRS.forEach(p => {
@@ -585,7 +565,8 @@ function calcUpdate() {
     if (!pair) return;
     const fxRate = pair.fxKey==='JPY' ? (S.fx.CNY/S.fx.JPY) : S.fx.CNY;
     document.getElementById('calc-out-fx').textContent    = fxRate.toFixed(4);
-    document.getElementById('calc-out-ratio').textContent = `×${pair.conversion>=1?pair.conversion.toFixed(2):pair.conversion.toFixed(5)}`;
+    document.getElementById('calc-out-ratio').textContent =
+        `×${pair.conversion>=1?pair.conversion.toFixed(2):pair.conversion.toFixed(5)}`;
     document.getElementById('calc-dom-unit').textContent  = `(${pair.dom.unit})`;
     document.getElementById('calc-intl-unit').textContent = `(${pair.intl.unit})`;
     document.getElementById('calc-desc').textContent      = pair.desc;
@@ -623,13 +604,14 @@ function calcRun() {
     else                 { sig.textContent='轻微负溢价';  sig.className='text-2xl font-bold text-red-300'; }
 }
 
-// ─────────────────────────────────────────────────────────────
-// 历史弹窗
-// ─────────────────────────────────────────────────────────────
+// ─── 历史弹窗 ────────────────────────────────────────────────
 function showHist(id) {
     const pair = PAIRS.find(p=>p.id===id);
     const hist = S.history[id]||[];
-    if (hist.length<2) { alert(`${pair?.name}\n\n数据点不足，请等待几次刷新后查看。`); return; }
+    if (hist.length<2) {
+        alert(`${pair?.name}\n\n数据点不足，请等待几次刷新后查看。`);
+        return;
+    }
     const avg = hist.reduce((s,p)=>s+p.v,0)/hist.length;
     const max = Math.max(...hist.map(p=>p.v));
     const min = Math.min(...hist.map(p=>p.v));
