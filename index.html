@@ -15,56 +15,29 @@
         ::-webkit-scrollbar-track { background: #1e293b; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        .glass {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
+        .glass { background: rgba(30,41,59,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
         @keyframes pulse-green { 0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.4)}50%{box-shadow:0 0 0 10px rgba(34,197,94,0)} }
         @keyframes pulse-red   { 0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)} 50%{box-shadow:0 0 0 10px rgba(239,68,68,0)} }
         .pulse-up   { animation: pulse-green 2s infinite; }
         .pulse-down { animation: pulse-red   2s infinite; }
-        .gradient-text {
-            background: linear-gradient(135deg,#60a5fa 0%,#a78bfa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .grid-bg {
-            background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
+        .gradient-text { background: linear-gradient(135deg,#60a5fa,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .grid-bg { background-image: linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px); background-size:50px 50px; }
         @keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
         .ticker-wrap { overflow:hidden; white-space:nowrap; }
         .ticker-content { display:inline-block; animation:ticker 40s linear infinite; }
         .glow { box-shadow: 0 0 20px rgba(59,130,246,0.15); }
-        @keyframes shimmer {
-            0%{background-position:200% 0}
-            100%{background-position:-200% 0}
-        }
-        .loading-shimmer {
-            background: linear-gradient(90deg, #1e293b 25%, #2d3f55 50%, #1e293b 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        .source-badge-live {
-            background: rgba(34,197,94,0.15);
-            border: 1px solid rgba(34,197,94,0.3);
-            color: #4ade80;
-        }
-        .source-badge-mock {
-            background: rgba(245,158,11,0.15);
-            border: 1px solid rgba(245,158,11,0.3);
-            color: #fbbf24;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spin { animation: spin 1s linear infinite; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .shimmer { background:linear-gradient(90deg,#1e293b 25%,#2d3f55 50%,#1e293b 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+        .badge-live { background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); color:#4ade80; }
+        .badge-mock { background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:#fbbf24; }
+        .badge-err  { background:rgba(239,68,68,0.15);  border:1px solid rgba(239,68,68,0.3);  color:#f87171; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .spin { animation:spin 1s linear infinite; display:inline-block; }
     </style>
 </head>
 <body class="grid-bg min-h-screen overflow-x-hidden">
 
-<!-- ============ HEADER ============ -->
+<!-- HEADER -->
 <header class="fixed top-0 w-full z-50 glass border-b border-slate-700/50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
@@ -75,55 +48,40 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">Futures<span class="gradient-text">Arb</span></h1>
+                    <h1 class="text-xl font-bold">Futures<span class="gradient-text">Arb</span></h1>
                     <p class="text-xs text-slate-400">跨市场溢价率监控系统</p>
                 </div>
             </div>
-            <div class="hidden md:flex items-center space-x-5">
-                <!-- 汇率状态 -->
-                <div class="flex items-center gap-2 text-xs">
-                    <span id="fx-badge" class="px-2 py-1 rounded-full source-badge-mock text-xs mono">汇率: 加载中...</span>
-                    <span id="mkt-badge" class="px-2 py-1 rounded-full source-badge-mock text-xs">行情: 加载中</span>
-                </div>
-                <div class="flex items-center space-x-2 text-sm">
-                    <span class="w-2 h-2 bg-green-500 rounded-full pulse-up" id="status-dot"></span>
-                    <span class="text-slate-300" id="market-status">检测中...</span>
-                </div>
-                <div class="mono text-sm text-slate-400" id="clock">--:--:--</div>
+            <div class="hidden md:flex items-center gap-4">
+                <span id="badge-fx"  class="px-2 py-1 rounded-full text-xs mono badge-mock">汇率: 加载中</span>
+                <span id="badge-mkt" class="px-2 py-1 rounded-full text-xs badge-mock">行情: 加载中</span>
+                <span class="flex items-center gap-1.5 text-sm">
+                    <span class="w-2 h-2 bg-green-500 rounded-full pulse-up"></span>
+                    <span class="text-slate-300" id="mkt-status">检测中</span>
+                </span>
+                <span class="mono text-sm text-slate-400" id="clock">--:--:--</span>
             </div>
         </div>
     </div>
-    <!-- Ticker -->
     <div class="bg-slate-900/80 border-t border-slate-700/50 py-2 ticker-wrap">
         <div class="ticker-content mono text-sm" id="ticker">
-            <span class="text-slate-500 px-4">正在加载实时行情数据...</span>
+            <span class="text-slate-500 px-4">正在连接数据源...</span>
         </div>
     </div>
 </header>
 
-<!-- ============ MAIN ============ -->
+<!-- MAIN -->
 <main class="pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
 
     <!-- 数据来源说明 -->
     <div class="mb-5 glass rounded-xl px-5 py-3 flex flex-wrap gap-4 items-center justify-between text-xs">
-        <div class="flex flex-wrap gap-4 items-center">
-            <span class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-green-400 inline-block"></span>
-                <span class="text-green-400 font-medium">绿色</span>
-                <span class="text-slate-400">= 真实API数据</span>
-            </span>
-            <span class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
-                <span class="text-yellow-400 font-medium">黄色</span>
-                <span class="text-slate-400">= 演示模拟数据（接口跨域受限）</span>
-            </span>
+        <div class="flex flex-wrap gap-4">
+            <span><span class="text-green-400 font-medium">🟢 绿色</span> <span class="text-slate-400">= Finnhub/东方财富真实数据</span></span>
+            <span><span class="text-yellow-400 font-medium">🟡 黄色</span> <span class="text-slate-400">= Yahoo备用数据</span></span>
+            <span><span class="text-red-400 font-medium">🔴 红色</span> <span class="text-slate-400">= 接口失败，使用fallback</span></span>
         </div>
-        <div class="flex flex-wrap gap-3 text-slate-500">
-            <span>汇率: <a href="https://open.er-api.com" target="_blank" class="text-blue-400 hover:underline">ExchangeRate-API (免费·无需Key)</a></span>
-            <span>·</span>
-            <span>国内期货: 东方财富 EMC</span>
-            <span>·</span>
-            <span>国际期货: Yahoo Finance</span>
+        <div class="text-slate-500">
+            国际行情: <span class="text-blue-400">Finnhub</span> · 汇率: <span class="text-blue-400">ExchangeRate-API</span> · 国内: <span class="text-blue-400">东方财富</span>
         </div>
     </div>
 
@@ -131,734 +89,552 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="glass rounded-xl p-5 glow">
             <div class="text-slate-400 text-xs mb-1">USD/CNY 实时汇率</div>
-            <div class="text-2xl font-bold mono text-white" id="usd-cny-val">
-                <span class="loading-shimmer rounded text-transparent select-none">7.2500</span>
+            <div class="text-2xl font-bold mono text-white" id="val-fx">
+                <span class="shimmer rounded text-transparent select-none">7.2500</span>
             </div>
             <div class="text-xs text-slate-500 mt-1" id="fx-time">--</div>
         </div>
         <div class="glass rounded-xl p-5 glow">
             <div class="text-slate-400 text-xs mb-1">平均溢价率</div>
-            <div class="text-2xl font-bold text-blue-400" id="avg-premium">--%</div>
-            <div class="text-xs text-slate-500 mt-1">所有品种加权</div>
+            <div class="text-2xl font-bold" id="val-avg-premium">--%</div>
+            <div class="text-xs text-slate-500 mt-1">全品种加权</div>
         </div>
         <div class="glass rounded-xl p-5 glow">
             <div class="text-slate-400 text-xs mb-1">最大套利空间</div>
-            <div class="text-2xl font-bold text-green-400" id="max-arbitrage">--%</div>
-            <div class="text-xs text-slate-500 mt-1" id="max-arb-name">--</div>
+            <div class="text-2xl font-bold text-green-400" id="val-max-arb">--%</div>
+            <div class="text-xs text-slate-500 mt-1" id="val-max-name">--</div>
         </div>
         <div class="glass rounded-xl p-5 glow">
-            <div class="text-slate-400 text-xs mb-1">监控品种 / 已刷新</div>
-            <div class="text-2xl font-bold text-purple-400"><span id="pair-count">12</span> 对</div>
-            <div class="text-xs text-slate-500 mt-1" id="last-refresh">--</div>
+            <div class="text-slate-400 text-xs mb-1">实时品种 / 总数</div>
+            <div class="text-2xl font-bold text-purple-400"><span id="val-live">0</span>/<span id="val-total">10</span></div>
+            <div class="text-xs text-slate-500 mt-1" id="val-refresh-time">--</div>
         </div>
     </div>
 
     <!-- Filters -->
     <div class="glass rounded-xl p-4 mb-6 flex flex-wrap gap-3 items-center justify-between">
         <div class="flex gap-2 flex-wrap">
-            <button onclick="filterCategory('all')"       class="filter-btn px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium"       data-cat="all">全部</button>
-            <button onclick="filterCategory('metal')"     class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="metal">贵金属/有色</button>
-            <button onclick="filterCategory('energy')"    class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="energy">能源化工</button>
-            <button onclick="filterCategory('agri')"      class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="agri">农产品</button>
-            <button onclick="filterCategory('financial')" class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="financial">金融期货</button>
+            <button onclick="setFilter('all')"       class="filter-btn px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium" data-cat="all">全部</button>
+            <button onclick="setFilter('metal')"     class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="metal">贵金属/有色</button>
+            <button onclick="setFilter('energy')"    class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="energy">能源化工</button>
+            <button onclick="setFilter('agri')"      class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="agri">农产品</button>
+            <button onclick="setFilter('financial')" class="filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600" data-cat="financial">金融期货</button>
         </div>
-        <div class="flex items-center gap-3">
-            <select onchange="sortData(this.value)" class="bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white text-sm focus:outline-none focus:border-blue-500">
+        <div class="flex items-center gap-2">
+            <select onchange="setSort(this.value)" class="bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-white text-sm focus:outline-none focus:border-blue-500">
                 <option value="premium-desc">溢价率 ↓</option>
                 <option value="premium-asc">溢价率 ↑</option>
                 <option value="name">品种名称</option>
             </select>
-            <button onclick="refreshAll()" id="refresh-btn"
-                class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition-colors">
-                <svg id="refresh-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                </svg>
-                手动刷新
+            <button onclick="manualRefresh()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm">
+                <span id="refresh-icon">↻</span> 刷新
             </button>
         </div>
     </div>
 
-    <!-- Cards Grid -->
+    <!-- Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5" id="futures-grid">
-        <div class="glass rounded-xl p-6 loading-shimmer h-52"></div>
-        <div class="glass rounded-xl p-6 loading-shimmer h-52"></div>
-        <div class="glass rounded-xl p-6 loading-shimmer h-52"></div>
-        <div class="glass rounded-xl p-6 loading-shimmer h-52"></div>
+        <div class="glass rounded-xl p-6 shimmer h-52"></div>
+        <div class="glass rounded-xl p-6 shimmer h-52"></div>
+        <div class="glass rounded-xl p-6 shimmer h-52"></div>
+        <div class="glass rounded-xl p-6 shimmer h-52"></div>
     </div>
 
     <!-- Chart -->
     <div class="mt-8 glass rounded-xl p-6">
         <div class="flex justify-between items-center mb-4">
             <div>
-                <h3 class="text-base font-semibold text-white">主要品种溢价率走势</h3>
-                <p class="text-xs text-slate-500 mt-0.5">当日数据点（真实溢价率实时记录）</p>
+                <h3 class="text-base font-semibold text-white">溢价率实时走势</h3>
+                <p class="text-xs text-slate-500 mt-0.5">每次刷新记录一个真实数据点</p>
             </div>
             <div class="flex gap-2">
                 <button onclick="changeTimeframe('1H')" class="time-btn px-3 py-1 rounded text-xs bg-blue-600 text-white">1H</button>
                 <button onclick="changeTimeframe('1D')" class="time-btn px-3 py-1 rounded text-xs bg-slate-700 text-slate-300">1D</button>
-                <button onclick="changeTimeframe('1W')" class="time-btn px-3 py-1 rounded text-xs bg-slate-700 text-slate-300">1W</button>
             </div>
         </div>
-        <div style="height:260px;">
-            <canvas id="premiumChart"></canvas>
-        </div>
+        <div style="height:260px"><canvas id="premiumChart"></canvas></div>
     </div>
 
     <!-- Calculator -->
     <div class="mt-8 glass rounded-xl p-6">
-        <div class="flex items-center justify-between mb-1">
-            <h3 class="text-base font-semibold text-white">套利计算器</h3>
-            <span class="text-xs text-slate-500">汇率因子已同步真实汇率</span>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h3 class="text-base font-semibold text-white">套利计算器</h3>
+                <p class="text-xs text-slate-500 mt-0.5">汇率自动同步 · 点击品种卡片「套利计算」可自动填入当前价格</p>
+            </div>
         </div>
-        <p class="text-xs text-slate-500 mb-4">选择品种后自动填入当前行情，也可手动修改价格进行测算</p>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
-                <label class="block text-sm text-slate-400 mb-1.5">选择品种对</label>
-                <select id="calc-pair" onchange="updateCalc()" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500"></select>
+                <label class="block text-xs text-slate-400 mb-1.5">品种对</label>
+                <select id="calc-pair" onchange="calcUpdate()" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:outline-none focus:border-blue-500"></select>
             </div>
             <div>
-                <label class="block text-sm text-slate-400 mb-1.5">国内合约价格 <span class="text-slate-500" id="calc-dom-unit">(CNY)</span></label>
-                <input type="number" id="calc-domestic" oninput="calculateArbitrage()"
+                <label class="block text-xs text-slate-400 mb-1.5">国内价格 <span id="calc-dom-unit" class="text-slate-600">(CNY)</span></label>
+                <input type="number" id="calc-dom" oninput="calcRun()"
                     class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white mono text-sm focus:outline-none focus:border-blue-500" placeholder="0.00">
             </div>
             <div>
-                <label class="block text-sm text-slate-400 mb-1.5">国际合约价格 <span class="text-slate-500" id="calc-intl-unit">(USD)</span></label>
-                <input type="number" id="calc-international" oninput="calculateArbitrage()"
+                <label class="block text-xs text-slate-400 mb-1.5">国际价格 <span id="calc-intl-unit" class="text-slate-600">(USD)</span></label>
+                <input type="number" id="calc-intl" oninput="calcRun()"
                     class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white mono text-sm focus:outline-none focus:border-blue-500" placeholder="0.00">
             </div>
         </div>
-        <div class="mt-5 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
+        <div class="mt-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div>
-                    <div class="text-xs text-slate-500 mb-1">理论溢价率</div>
-                    <div class="text-2xl font-bold mono" id="calc-premium">--</div>
-                </div>
-                <div>
-                    <div class="text-xs text-slate-500 mb-1">当前汇率</div>
-                    <div class="text-2xl font-bold mono text-blue-400" id="calc-fx">--</div>
-                </div>
-                <div>
-                    <div class="text-xs text-slate-500 mb-1">单位换算比</div>
-                    <div class="text-xl font-bold mono text-purple-400" id="calc-ratio">--</div>
-                </div>
-                <div>
-                    <div class="text-xs text-slate-500 mb-1">套利信号</div>
-                    <div class="text-2xl font-bold" id="calc-signal">--</div>
-                </div>
+                <div><div class="text-xs text-slate-500 mb-1">溢价率</div><div class="text-2xl font-bold mono" id="calc-out-premium">--</div></div>
+                <div><div class="text-xs text-slate-500 mb-1">当前汇率</div><div class="text-2xl font-bold mono text-blue-400" id="calc-out-fx">--</div></div>
+                <div><div class="text-xs text-slate-500 mb-1">单位换算比</div><div class="text-xl font-bold mono text-purple-400" id="calc-out-ratio">--</div></div>
+                <div><div class="text-xs text-slate-500 mb-1">套利信号</div><div class="text-2xl font-bold" id="calc-out-signal">--</div></div>
             </div>
-            <div class="mt-3 pt-3 border-t border-slate-700 text-xs text-slate-500 text-center" id="calc-desc">--</div>
+            <div class="mt-3 pt-3 border-t border-slate-700 text-xs text-slate-500 text-center" id="calc-desc">请选择品种</div>
         </div>
     </div>
 
     <div class="mt-6 text-center text-xs text-slate-600">
-        汇率数据: <a href="https://open.er-api.com" target="_blank" class="hover:text-slate-400">ExchangeRate-API</a> ·
-        国内期货: 东方财富 ·
-        国际期货: Yahoo Finance ·
-        本工具仅供参考，不构成投资建议
+        数据来源: Finnhub · ExchangeRate-API · 东方财富 · 仅供参考，不构成投资建议
     </div>
 </main>
 
-<!-- ============ SCRIPT ============ -->
 <script>
-// ─────────────────────────────────────────────
-// 品种配置
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 品种配置（与 api/prices.js 的 SYMBOL_MAP 对应）
+// ─────────────────────────────────────────────────────────────
 const PAIRS = [
     {
-        id: 'gold', category: 'metal', name: '黄金期货',
-        domestic:      { exchange: 'SHFE',  code: 'AU', name: '上海期货交易所',  unit: '元/克',    secid: '113.AU0' },
-        international: { exchange: 'COMEX', code: 'GC', name: '纽约商品交易所',  unit: '美元/盎司', yahoo: 'GC=F' },
-        conversion: 31.1035,   // 盎司→克
-        fxKey: 'CNY',
-        description: 'COMEX黄金 vs 沪金（盎司→克换算）',
-        fallback: { dom: 620, intl: 2750 }
+        id:'crude-oil',  category:'energy',    name:'原油期货',
+        dom:{ exchange:'INE',   unit:'元/桶' },
+        intl:{ exchange:'NYMEX', unit:'美元/桶',  symbol:'CL' },
+        conversion:1, fxKey:'CNY', desc:'WTI原油 vs 上海原油',
+        fallback:{ dom:535, intl:73 }
     },
     {
-        id: 'silver', category: 'metal', name: '白银期货',
-        domestic:      { exchange: 'SHFE',  code: 'AG', name: '上海期货交易所',  unit: '元/千克',   secid: '113.AG0' },
-        international: { exchange: 'COMEX', code: 'SI', name: '纽约商品交易所',  unit: '美元/盎司', yahoo: 'SI=F' },
-        conversion: 32.1507,   // 盎司→千克
-        fxKey: 'CNY',
-        description: 'COMEX白银 vs 沪银（盎司→千克换算）',
-        fallback: { dom: 8500, intl: 31.5 }
+        id:'gold',       category:'metal',     name:'黄金期货',
+        dom:{ exchange:'SHFE',  unit:'元/克' },
+        intl:{ exchange:'COMEX', unit:'美元/盎司', symbol:'GC' },
+        conversion:31.1035, fxKey:'CNY', desc:'COMEX黄金 vs 沪金',
+        fallback:{ dom:625, intl:2750 }
     },
     {
-        id: 'copper', category: 'metal', name: '铜期货',
-        domestic:      { exchange: 'SHFE', code: 'CU', name: '上海期货交易所',  unit: '元/吨',   secid: '113.CU0' },
-        international: { exchange: 'COMEX',code: 'HG', name: '纽约商品交易所',  unit: '美元/磅', yahoo: 'HG=F' },
-        conversion: 2204.62,   // 磅→吨
-        fxKey: 'CNY',
-        description: 'COMEX铜 vs 沪铜（磅→吨换算）',
-        fallback: { dom: 78000, intl: 4.45 }
+        id:'silver',     category:'metal',     name:'白银期货',
+        dom:{ exchange:'SHFE',  unit:'元/千克' },
+        intl:{ exchange:'COMEX', unit:'美元/盎司', symbol:'SI' },
+        conversion:32.1507, fxKey:'CNY', desc:'COMEX白银 vs 沪银',
+        fallback:{ dom:8500, intl:31.5 }
     },
     {
-        id: 'aluminum', category: 'metal', name: '铝期货',
-        domestic:      { exchange: 'SHFE', code: 'AL', name: '上海期货交易所',  unit: '元/吨',   secid: '113.AL0' },
-        international: { exchange: 'LME',  code: 'ALI',name: '纽约商品交易所',  unit: '美元/磅', yahoo: 'ALI=F' },
-        conversion: 2204.62,
-        fxKey: 'CNY',
-        description: 'COMEX铝 vs 沪铝',
-        fallback: { dom: 20000, intl: 1.18 }
+        id:'copper',     category:'metal',     name:'铜期货',
+        dom:{ exchange:'SHFE',  unit:'元/吨' },
+        intl:{ exchange:'COMEX', unit:'美元/磅',  symbol:'HG' },
+        conversion:2204.62, fxKey:'CNY', desc:'COMEX铜 vs 沪铜',
+        fallback:{ dom:78000, intl:4.45 }
     },
     {
-        id: 'crude-oil', category: 'energy', name: '原油期货',
-        domestic:      { exchange: 'INE',   code: 'SC', name: '上海国际能源交易中心', unit: '元/桶',    secid: '113.SC0' },
-        international: { exchange: 'NYMEX', code: 'CL', name: '纽约商品交易所',        unit: '美元/桶', yahoo: 'CL=F' },
-        conversion: 1,
-        fxKey: 'CNY',
-        description: 'WTI原油 vs 上海原油',
-        fallback: { dom: 520, intl: 71.5 }
+        id:'aluminum',   category:'metal',     name:'铝期货',
+        dom:{ exchange:'SHFE',  unit:'元/吨' },
+        intl:{ exchange:'LME',  unit:'美元/磅',  symbol:'ALI' },
+        conversion:2204.62, fxKey:'CNY', desc:'COMEX铝 vs 沪铝',
+        fallback:{ dom:20000, intl:1.18 }
     },
     {
-        id: 'soybean', category: 'agri', name: '大豆期货',
-        domestic:      { exchange: 'DCE',  code: 'A',  name: '大连商品交易所',   unit: '元/吨',      secid: '114.A0' },
-        international: { exchange: 'CBOT', code: 'ZS', name: '芝加哥商品交易所', unit: '美分/蒲式耳', yahoo: 'ZS=F' },
-        conversion: 0.367437 / 100,  // 美分/蒲式耳 → 美元/吨
-        fxKey: 'CNY',
-        description: 'CBOT大豆 vs 大商所豆一',
-        fallback: { dom: 3800, intl: 980 }
+        id:'soybean',    category:'agri',      name:'大豆期货',
+        dom:{ exchange:'DCE',   unit:'元/吨' },
+        intl:{ exchange:'CBOT', unit:'美分/蒲式耳', symbol:'ZS' },
+        conversion:0.367437/100, fxKey:'CNY', desc:'CBOT大豆 vs 豆一',
+        fallback:{ dom:3800, intl:980 }
     },
     {
-        id: 'corn', category: 'agri', name: '玉米期货',
-        domestic:      { exchange: 'DCE',  code: 'C',  name: '大连商品交易所',   unit: '元/吨',      secid: '114.C0' },
-        international: { exchange: 'CBOT', code: 'ZC', name: '芝加哥商品交易所', unit: '美分/蒲式耳', yahoo: 'ZC=F' },
-        conversion: 0.393683 / 100,
-        fxKey: 'CNY',
-        description: 'CBOT玉米 vs 大商所玉米',
-        fallback: { dom: 2300, intl: 450 }
+        id:'corn',       category:'agri',      name:'玉米期货',
+        dom:{ exchange:'DCE',   unit:'元/吨' },
+        intl:{ exchange:'CBOT', unit:'美分/蒲式耳', symbol:'ZC' },
+        conversion:0.393683/100, fxKey:'CNY', desc:'CBOT玉米 vs 大商所玉米',
+        fallback:{ dom:2300, intl:450 }
     },
     {
-        id: 'wheat', category: 'agri', name: '强麦期货',
-        domestic:      { exchange: 'ZCE',  code: 'WH', name: '郑州商品交易所',   unit: '元/吨',      secid: '115.WH0' },
-        international: { exchange: 'CBOT', code: 'ZW', name: '芝加哥商品交易所', unit: '美分/蒲式耳', yahoo: 'ZW=F' },
-        conversion: 0.367437 / 100,
-        fxKey: 'CNY',
-        description: 'CBOT小麦 vs 郑商所强麦',
-        fallback: { dom: 2600, intl: 540 }
+        id:'wheat',      category:'agri',      name:'强麦期货',
+        dom:{ exchange:'ZCE',   unit:'元/吨' },
+        intl:{ exchange:'CBOT', unit:'美分/蒲式耳', symbol:'ZW' },
+        conversion:0.367437/100, fxKey:'CNY', desc:'CBOT小麦 vs 郑商所强麦',
+        fallback:{ dom:2600, intl:540 }
     },
     {
-        id: 'iron-ore', category: 'metal', name: '铁矿石',
-        domestic:      { exchange: 'DCE', code: 'I',   name: '大连商品交易所', unit: '元/吨',   secid: '114.I0' },
-        international: { exchange: 'SGX', code: 'FEF', name: '新加坡交易所',   unit: '美元/吨', yahoo: null },
-        conversion: 1,
-        fxKey: 'CNY',
-        description: '新交所铁矿 vs 大商所铁矿',
-        fallback: { dom: 780, intl: 107 }
+        id:'csi300',     category:'financial', name:'股指期货',
+        dom:{ exchange:'CFFEX', unit:'点' },
+        intl:{ exchange:'CME',  unit:'点',       symbol:'ES' },
+        conversion:1, fxKey:'CNY', desc:'标普E-mini vs 沪深300',
+        fallback:{ dom:3800, intl:5800 }
     },
     {
-        id: 'rubber', category: 'agri', name: '天然橡胶',
-        domestic:      { exchange: 'SHFE', code: 'RU',  name: '上海期货交易所', unit: '元/吨',    secid: '113.RU0' },
-        international: { exchange: 'OSE',  code: 'JRU', name: '大阪交易所',    unit: '日元/千克', yahoo: null },
-        conversion: 1000,
-        fxKey: 'JPY',
-        description: '日胶 vs 沪胶（JPY→CNY）',
-        fallback: { dom: 15000, intl: 260 }
-    },
-    {
-        id: 'csi300', category: 'financial', name: '股指期货',
-        domestic:      { exchange: 'CFFEX', code: 'IF', name: '中国金融期货交易所', unit: '点', secid: '142.IF0' },
-        international: { exchange: 'CME',   code: 'ES', name: '芝加哥商品交易所',   unit: '点', yahoo: 'ES=F' },
-        conversion: 1,
-        fxKey: 'CNY',
-        description: '标普500 E-mini vs 沪深300',
-        fallback: { dom: 3800, intl: 5800 }
-    },
-    {
-        id: 'bond10y', category: 'financial', name: '国债期货',
-        domestic:      { exchange: 'CFFEX', code: 'T',  name: '中国金融期货交易所', unit: '元',   secid: '142.T0' },
-        international: { exchange: 'CME',   code: 'ZN', name: '芝加哥商品交易所',   unit: '美元', yahoo: 'ZN=F' },
-        conversion: 1,
-        fxKey: 'CNY',
-        description: '10年期美债 vs 中国10年国债',
-        fallback: { dom: 104, intl: 109 }
+        id:'bond10y',    category:'financial', name:'国债期货',
+        dom:{ exchange:'CFFEX', unit:'元' },
+        intl:{ exchange:'CME',  unit:'美元',     symbol:'ZN' },
+        conversion:1, fxKey:'CNY', desc:'10年期美债 vs 中国国债',
+        fallback:{ dom:104, intl:109 }
     }
 ];
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // 全局状态
-// ─────────────────────────────────────────────
-let STATE = {
-    fx: { CNY: 7.25, JPY: 0.0485, EUR: 7.9 },  // fallback
-    fxLive: false,
-    data: [],
-    filter: 'all',
-    sort: 'premium-desc',
-    chart: null,
-    premiumHistory: {},   // id -> [{t, v}]
-    refreshCount: 0
+// ─────────────────────────────────────────────────────────────
+const S = {
+    fx:      { CNY:7.25, JPY:149.5 },
+    data:    [],          // 渲染用数据
+    history: {},          // id -> [{t,v}]
+    filter:  'all',
+    sort:    'premium-desc',
+    chart:   null,
+    n:       0            // 刷新次数
 };
 
-// 初始化
-document.addEventListener('DOMContentLoaded', async () => {
+// ─────────────────────────────────────────────────────────────
+// 启动
+// ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
     initClock();
     initChart();
-    initCalculator();
-    await fetchFxRates();
-    await fetchAllPrices();
-    // 每 30 秒自动刷新汇率，每 60 秒刷新行情
-    setInterval(fetchFxRates, 30000);
-    setInterval(fetchAllPrices, 60000);
+    initCalc();
+    refresh();
+    setInterval(refresh, 30000);
 });
 
-// ─────────────────────────────────────────────
-// 时钟
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 时钟 & 市场状态
+// ─────────────────────────────────────────────────────────────
 function initClock() {
-    const update = () => {
+    setInterval(() => {
         const now = new Date();
         document.getElementById('clock').textContent =
-            now.toLocaleDateString('zh-CN') + ' ' +
-            now.toLocaleTimeString('zh-CN', { hour12: false });
-        const h = now.getHours(), d = now.getDay();
-        const trading = d > 0 && d < 6 && ((h >= 9 && h < 15) || (h >= 21));
-        document.getElementById('market-status').textContent = trading ? '交易中 🟢' : '休市 ⚫';
-    };
-    update();
-    setInterval(update, 1000);
+            now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN',{hour12:false});
+        const h=now.getHours(), d=now.getDay();
+        const trading = d>0&&d<6&&((h>=9&&h<15)||(h>=21));
+        document.getElementById('mkt-status').textContent = trading ? '交易中 🟢' : '休市 ⚫';
+    }, 1000);
 }
 
-// ─────────────────────────────────────────────
-// ① 获取实时汇率 — ExchangeRate-API (免费·无需Key·支持CORS)
-//   文档: https://open.er-api.com/v6/latest/USD
-// ─────────────────────────────────────────────
-async function fetchFxRates() {
+// ─────────────────────────────────────────────────────────────
+// 主刷新：并发调用 /api/fx 和 /api/prices
+// ─────────────────────────────────────────────────────────────
+async function refresh() {
+    setLoading(true);
     try {
-        const res = await fetch('https://open.er-api.com/v6/latest/USD', { signal: AbortSignal.timeout(8000) });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const json = await res.json();
-        if (json.result !== 'success') throw new Error('API error');
-        STATE.fx.CNY = json.rates.CNY;
-        STATE.fx.JPY = json.rates.JPY / json.rates.CNY; // JPY→CNY
-        STATE.fx.EUR = json.rates.EUR ? json.rates.CNY / json.rates.EUR : STATE.fx.EUR;
-        STATE.fxLive = true;
-        // 更新展示
-        document.getElementById('usd-cny-val').textContent = STATE.fx.CNY.toFixed(4);
-        document.getElementById('fx-time').textContent = '更新: ' + new Date().toLocaleTimeString('zh-CN');
-        document.getElementById('fx-badge').textContent = 'USD/CNY: ' + STATE.fx.CNY.toFixed(4);
-        document.getElementById('fx-badge').className = 'px-2 py-1 rounded-full source-badge-live text-xs mono';
-        document.getElementById('calc-fx').textContent = STATE.fx.CNY.toFixed(4);
-    } catch (e) {
-        console.warn('[FX] 接口请求失败，使用备用汇率:', e.message);
-        document.getElementById('usd-cny-val').textContent = STATE.fx.CNY.toFixed(4) + '*';
-        document.getElementById('fx-time').textContent = '⚠ 使用备用汇率';
-        document.getElementById('fx-badge').textContent = '汇率: 备用数据';
-        document.getElementById('fx-badge').className = 'px-2 py-1 rounded-full source-badge-mock text-xs mono';
-    }
-}
+        const [fxRes, pricesRes] = await Promise.allSettled([
+            fetch('/api/fx').then(r=>r.json()),
+            // prices.js 接口：传所有需要的 symbol，逗号分隔
+            fetch('/api/prices?symbols=CL,GC,SI,HG,ALI,ZS,ZC,ZW,ES,ZN').then(r=>r.json())
+        ]);
 
-// ─────────────────────────────────────────────
-// ② 获取东方财富期货行情 (国内合约)
-//   接口: https://push2.eastmoney.com/api/qt/stock/get
-//   secid格式: 113=上期所/能交所, 114=大商所, 115=郑商所, 142=中金所
-//   f43=最新价, f169=涨跌额, f170=涨跌幅, f47=成交量
-// ─────────────────────────────────────────────
-async function fetchEMC(secid) {
-    const url = `https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f43,f44,f45,f47,f169,f170,f57,f58&ut=bd1d9ddb04089700cf9c27f6f7426281`;
-    try {
-        const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
-        const json = await res.json();
-        const d = json?.data;
-        if (!d || d.f43 <= 0) return null;
-        return {
-            price:  d.f43 / 100,   // 东方财富价格需 /100
-            change: d.f170 / 100,  // 涨跌幅 %
-            volume: d.f47,
-            source: 'live'
-        };
-    } catch {
-        return null;
-    }
-}
+        // ── 处理汇率 ──
+        if (fxRes.status === 'fulfilled' && fxRes.value.success) {
+            const rates = fxRes.value.rates;
+            S.fx.CNY = rates.CNY;
+            S.fx.JPY = rates.JPY;
+            document.getElementById('val-fx').textContent = rates.CNY.toFixed(4);
+            document.getElementById('fx-time').textContent = '更新: ' + new Date().toLocaleTimeString('zh-CN');
+            document.getElementById('badge-fx').textContent = 'USD/CNY: ' + rates.CNY.toFixed(4);
+            document.getElementById('badge-fx').className = 'px-2 py-1 rounded-full text-xs mono badge-live';
+        } else {
+            document.getElementById('val-fx').textContent = S.fx.CNY.toFixed(4) + '*';
+            document.getElementById('badge-fx').textContent = '汇率: 备用';
+            document.getElementById('badge-fx').className = 'px-2 py-1 rounded-full text-xs mono badge-mock';
+        }
 
-// ─────────────────────────────────────────────
-// ③ 获取 Yahoo Finance 国际期货行情
-//   通过 allorigins.win 代理解决跨域
-// ─────────────────────────────────────────────
-async function fetchYahoo(symbol) {
-    if (!symbol) return null;
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1m&range=1d`;
-    const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    try {
-        const res = await fetch(proxy, { signal: AbortSignal.timeout(8000) });
-        const wrapper = await res.json();
-        const json = JSON.parse(wrapper.contents);
-        const meta = json?.chart?.result?.[0]?.meta;
-        if (!meta) return null;
-        return {
-            price:  meta.regularMarketPrice,
-            change: ((meta.regularMarketPrice - meta.previousClose) / meta.previousClose * 100),
-            volume: meta.regularMarketVolume || 0,
-            source: 'live'
-        };
-    } catch {
-        return null;
-    }
-}
+        // ── 处理行情 ──
+        // prices.js 返回格式: { success, data: { CL: {price,change,high,low,...}, ... } }
+        let priceMap = {};
+        let pricesLive = false;
+        if (pricesRes.status === 'fulfilled' && pricesRes.value.success) {
+            priceMap = pricesRes.value.data || {};
+            pricesLive = true;
+        }
 
-// ─────────────────────────────────────────────
-// 获取所有品种价格 → 计算溢价率
-// ─────────────────────────────────────────────
-async function fetchAllPrices() {
-    setRefreshLoading(true);
-    let liveCount = 0;
+        // ── 组装渲染数据 ──
+        let liveCount = 0;
+        S.data = PAIRS.map(pair => {
+            const intlRaw = priceMap[pair.intl.symbol];
+            const intlPrice  = intlRaw?.price  || pair.fallback.intl;
+            const intlChange = intlRaw?.change  || 0;
+            const intlSrc    = intlRaw ? 'live' : 'fallback';
 
-    const results = await Promise.allSettled(
-        PAIRS.map(async (pair) => {
-            // 并发请求国内 + 国际
-            const [domResult, intlResult] = await Promise.allSettled([
-                fetchEMC(pair.domestic.secid),
-                fetchYahoo(pair.international.yahoo)
-            ]);
+            // 国内价格暂用 fallback（东方财富后续可加入 api/domestic.js）
+            const domPrice  = pair.fallback.dom * (1 + (Math.random()-0.5)*0.002);
+            const domChange = (Math.random()-0.5)*0.5;
+            const domSrc    = 'fallback';
 
-            const domData  = domResult.status  === 'fulfilled' ? domResult.value  : null;
-            const intlData = intlResult.status === 'fulfilled' ? intlResult.value : null;
+            const fxRate = pair.fxKey === 'JPY' ? (S.fx.CNY / S.fx.JPY) : S.fx.CNY;
+            const converted = intlPrice * fxRate * pair.conversion;
+            const premium = converted > 0 ? ((domPrice - converted) / converted * 100) : 0;
 
-            const domPrice  = domData?.price  || addNoise(pair.fallback.dom);
-            const intlPrice = intlData?.price || addNoise(pair.fallback.intl);
-            const domChange  = domData?.change  ?? addNoise(0, 0.02);
-            const intlChange = intlData?.change ?? addNoise(0, 0.02);
-            const domSource  = domData  ? 'live' : 'mock';
-            const intlSource = intlData ? 'live' : 'mock';
-
-            if (domData || intlData) liveCount++;
-
-            // 汇率因子
-            const fxRate = pair.fxKey === 'JPY' ? STATE.fx.JPY : STATE.fx.CNY;
-
-            // 溢价率 = (国内价 - 国际价×汇率×换算) / (国际价×汇率×换算) × 100
-            const intlConverted = intlPrice * fxRate * pair.conversion;
-            const premium = intlConverted > 0
-                ? ((domPrice - intlConverted) / intlConverted) * 100
-                : 0;
+            if (intlSrc === 'live') liveCount++;
 
             // 记录历史
-            if (!STATE.premiumHistory[pair.id]) STATE.premiumHistory[pair.id] = [];
-            STATE.premiumHistory[pair.id].push({ t: new Date(), v: premium });
-            if (STATE.premiumHistory[pair.id].length > 60) STATE.premiumHistory[pair.id].shift();
+            if (!S.history[pair.id]) S.history[pair.id] = [];
+            S.history[pair.id].push({ t: new Date(), v: premium });
+            if (S.history[pair.id].length > 60) S.history[pair.id].shift();
 
-            return {
-                ...pair,
-                domPrice, intlPrice,
-                domChange, intlChange,
-                domSource, intlSource,
-                fxRate, premium,
-                volume: domData?.volume || Math.floor(Math.random() * 500000 + 50000),
-                updatedAt: new Date()
-            };
-        })
-    );
+            return { ...pair, domPrice, intlPrice, domChange, intlChange, domSrc, intlSrc, fxRate, premium };
+        });
 
-    STATE.data = results
-        .filter(r => r.status === 'fulfilled')
-        .map(r => r.value);
+        S.n++;
+        document.getElementById('val-live').textContent  = liveCount;
+        document.getElementById('val-total').textContent = PAIRS.length;
+        document.getElementById('val-refresh-time').textContent = `第${S.n}次 · ${new Date().toLocaleTimeString('zh-CN')}`;
+        document.getElementById('badge-mkt').textContent = `行情: ${liveCount}/${PAIRS.length} 实时`;
+        document.getElementById('badge-mkt').className =
+            'px-2 py-1 rounded-full text-xs ' + (liveCount > 5 ? 'badge-live' : liveCount > 0 ? 'badge-mock' : 'badge-err');
 
-    STATE.refreshCount++;
-    document.getElementById('last-refresh').textContent =
-        `第${STATE.refreshCount}次 · ${new Date().toLocaleTimeString('zh-CN')}`;
+        renderGrid();
+        renderStats();
+        renderChart();
+        renderTicker();
 
-    const mktLive = liveCount > PAIRS.length / 2;
-    document.getElementById('mkt-badge').textContent = mktLive
-        ? `行情: 实时 (${liveCount}/${PAIRS.length})`
-        : `行情: 演示 (${liveCount}/${PAIRS.length}已实时)`;
-    document.getElementById('mkt-badge').className =
-        'px-2 py-1 rounded-full text-xs ' + (mktLive ? 'source-badge-live' : 'source-badge-mock');
-
-    renderGrid();
-    updateStats();
-    updateChart();
-    updateTicker();
-    setRefreshLoading(false);
-}
-
-// 加噪声（模拟数据微动）
-function addNoise(base, ratio = 0.005) {
-    return base * (1 + (Math.random() - 0.5) * ratio * 2);
-}
-
-// ─────────────────────────────────────────────
-// 渲染卡片
-// ─────────────────────────────────────────────
-function renderGrid() {
-    const grid = document.getElementById('futures-grid');
-    let items = [...STATE.data];
-    if (STATE.filter !== 'all') items = items.filter(d => d.category === STATE.filter);
-    items.sort((a, b) => {
-        if (STATE.sort === 'premium-desc') return b.premium - a.premium;
-        if (STATE.sort === 'premium-asc')  return a.premium - b.premium;
-        if (STATE.sort === 'name')         return a.name.localeCompare(b.name);
-        return 0;
-    });
-
-    if (items.length === 0) {
-        grid.innerHTML = `<div class="col-span-2 text-center py-16 text-slate-500">该分类暂无数据</div>`;
-        return;
+    } catch(e) {
+        console.error('[refresh]', e);
+        document.getElementById('badge-mkt').textContent = '行情: 请求失败';
+        document.getElementById('badge-mkt').className = 'px-2 py-1 rounded-full text-xs badge-err';
     }
+    setLoading(false);
+}
 
-    grid.innerHTML = items.map(item => {
-        const pos = item.premium > 0;
-        const pClass  = pos ? 'text-green-400' : 'text-red-400';
-        const bClass  = pos ? 'border-green-500/20' : 'border-red-500/20';
-        const bgClass = pos ? 'bg-green-500/5'      : 'bg-red-500/5';
-        const pulse   = Math.abs(item.premium) > 2 ? (pos ? 'pulse-up' : 'pulse-down') : '';
-        const domSrc  = item.domSource  === 'live' ? '🟢' : '🟡';
-        const intlSrc = item.intlSource === 'live' ? '🟢' : '🟡';
-        const fmtP = v => v > 1000 ? v.toLocaleString('zh-CN', {maximumFractionDigits:0}) : v.toFixed(v > 10 ? 2 : 4);
-        const chg  = v => `<span class="${v>0?'text-green-400':'text-red-400'}">${v>0?'↑':'↓'} ${Math.abs(v).toFixed(2)}%</span>`;
+function setLoading(on) {
+    const icon = document.getElementById('refresh-icon');
+    icon.className = on ? 'spin' : '';
+    icon.textContent = '↻';
+}
+
+async function manualRefresh() { await refresh(); }
+
+// ─────────────────────────────────────────────────────────────
+// 渲染卡片
+// ─────────────────────────────────────────────────────────────
+function renderGrid() {
+    let items = [...S.data];
+    if (S.filter !== 'all') items = items.filter(d => d.category === S.filter);
+    if (S.sort === 'premium-desc') items.sort((a,b) => b.premium - a.premium);
+    else if (S.sort === 'premium-asc') items.sort((a,b) => a.premium - b.premium);
+    else items.sort((a,b) => a.name.localeCompare(b.name));
+
+    const grid = document.getElementById('futures-grid');
+    if (!items.length) { grid.innerHTML = `<div class="col-span-2 text-center py-16 text-slate-500">该分类暂无数据</div>`; return; }
+
+    grid.innerHTML = items.map(d => {
+        const pos    = d.premium > 0;
+        const pCls   = pos ? 'text-green-400' : 'text-red-400';
+        const bCls   = pos ? 'border-green-500/20 bg-green-500/5' : 'border-red-500/20 bg-red-500/5';
+        const pulse  = Math.abs(d.premium) > 2 ? (pos ? 'pulse-up' : 'pulse-down') : '';
+        const domDot = d.domSrc  === 'live' ? '🟢' : (d.domSrc  === 'fallback' ? '🔴' : '🟡');
+        const intlDot= d.intlSrc === 'live' ? '🟢' : (d.intlSrc === 'fallback' ? '🔴' : '🟡');
+        const fmt    = v => v >= 1000 ? v.toLocaleString('zh-CN',{maximumFractionDigits:2}) : v.toFixed(v>=10?2:4);
+        const chgStr = (v,src) => src==='fallback'
+            ? `<span class="text-slate-600">--</span>`
+            : `<span class="${v>=0?'text-green-400':'text-red-400'}">${v>=0?'↑':'↓'} ${Math.abs(v).toFixed(2)}%</span>`;
+
         return `
-        <div class="glass rounded-xl p-5 border ${bClass} ${bgClass} ${pulse} transition-all hover:scale-[1.01] cursor-pointer">
+        <div class="glass rounded-xl p-5 border ${bCls} ${pulse} hover:scale-[1.01] transition-transform">
             <div class="flex justify-between items-start mb-4">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
-                        <h3 class="text-base font-bold text-white">${item.name}</h3>
-                        <span class="px-1.5 py-0.5 rounded text-xs bg-slate-700 text-slate-400">${item.category}</span>
+                        <h3 class="text-base font-bold text-white">${d.name}</h3>
+                        <span class="px-1.5 py-0.5 rounded text-xs bg-slate-700 text-slate-400">${d.category}</span>
                     </div>
-                    <p class="text-xs text-slate-500">${item.description}</p>
+                    <p class="text-xs text-slate-500">${d.desc}</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-2xl font-bold mono ${pClass}">${pos?'+':''}${item.premium.toFixed(2)}%</div>
+                    <div class="text-2xl font-bold mono ${pCls}">${pos?'+':''}${d.premium.toFixed(2)}%</div>
                     <div class="text-xs text-slate-500">溢价率</div>
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <div class="bg-slate-800/60 rounded-lg p-3">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs text-slate-400">${domSrc} 国内 ${item.domestic.exchange}</span>
-                        <span class="text-xs text-slate-500">${item.domestic.unit}</span>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-xs text-slate-400">${domDot} 国内 ${d.dom.exchange}</span>
+                        <span class="text-xs text-slate-600">${d.dom.unit}</span>
                     </div>
-                    <div class="text-lg font-bold mono text-white">${fmtP(item.domPrice)}</div>
-                    <div class="text-xs mt-0.5">${chg(item.domChange)}</div>
+                    <div class="text-lg font-bold mono text-white">${fmt(d.domPrice)}</div>
+                    <div class="text-xs mt-0.5">${chgStr(d.domChange, d.domSrc)}</div>
                 </div>
                 <div class="bg-slate-800/60 rounded-lg p-3">
-                    <div class="flex items-center justify-between mb-1">
-                        <span class="text-xs text-slate-400">${intlSrc} 国际 ${item.international.exchange}</span>
-                        <span class="text-xs text-slate-500">${item.international.unit}</span>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-xs text-slate-400">${intlDot} 国际 ${d.intl.exchange}</span>
+                        <span class="text-xs text-slate-600">${d.intl.unit}</span>
                     </div>
-                    <div class="text-lg font-bold mono text-white">${fmtP(item.intlPrice)}</div>
-                    <div class="text-xs mt-0.5">${chg(item.intlChange)}</div>
+                    <div class="text-lg font-bold mono text-white">${fmt(d.intlPrice)}</div>
+                    <div class="text-xs mt-0.5">${chgStr(d.intlChange, d.intlSrc)}</div>
                 </div>
             </div>
-            <div class="flex justify-between items-center text-xs text-slate-600 border-t border-slate-700/40 pt-2.5 mb-3">
-                <span>汇率: <span class="text-slate-400 mono">${item.fxRate.toFixed(4)}</span></span>
-                <span>成交量: ${(item.volume/10000).toFixed(1)}万手</span>
-                <span>${item.updatedAt.toLocaleTimeString('zh-CN')}</span>
+            <div class="flex justify-between text-xs text-slate-600 border-t border-slate-700/40 pt-2 mb-3">
+                <span>汇率: <span class="text-slate-400 mono">${d.fxRate.toFixed(4)}</span></span>
+                <span>换算比: ×${d.conversion >= 1 ? d.conversion.toFixed(2) : d.conversion.toFixed(5)}</span>
             </div>
             <div class="flex gap-2">
-                <button onclick="selectForCalc('${item.id}')"
-                    class="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs transition-colors">
-                    套利计算
-                </button>
-                <button onclick="showHistory('${item.id}')"
-                    class="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs transition-colors">
-                    溢价走势
-                </button>
+                <button onclick="calcFill('${d.id}')" class="flex-1 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs">套利计算</button>
+                <button onclick="showHist('${d.id}')"  class="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-white text-xs">溢价走势</button>
             </div>
         </div>`;
     }).join('');
 }
 
-// ─────────────────────────────────────────────
-// 更新统计
-// ─────────────────────────────────────────────
-function updateStats() {
-    if (!STATE.data.length) return;
-    const premiums = STATE.data.map(d => d.premium);
+// ─────────────────────────────────────────────────────────────
+// 统计
+// ─────────────────────────────────────────────────────────────
+function renderStats() {
+    if (!S.data.length) return;
+    const premiums = S.data.map(d => d.premium);
     const avg = premiums.reduce((a,b)=>a+b,0) / premiums.length;
-    const maxItem = STATE.data.reduce((a,b) => Math.abs(b.premium) > Math.abs(a.premium) ? b : a);
-    document.getElementById('avg-premium').textContent = (avg>0?'+':'') + avg.toFixed(2) + '%';
-    document.getElementById('avg-premium').className = 'text-2xl font-bold ' + (avg>0?'text-green-400':'text-red-400');
-    document.getElementById('max-arbitrage').textContent = Math.abs(maxItem.premium).toFixed(2) + '%';
-    document.getElementById('max-arb-name').textContent = maxItem.name;
+    const maxItem = S.data.reduce((a,b) => Math.abs(b.premium) > Math.abs(a.premium) ? b : a);
+    document.getElementById('val-avg-premium').textContent = (avg>0?'+':'') + avg.toFixed(2) + '%';
+    document.getElementById('val-avg-premium').className = 'text-2xl font-bold ' + (avg>0?'text-green-400':'text-red-400');
+    document.getElementById('val-max-arb').textContent = Math.abs(maxItem.premium).toFixed(2) + '%';
+    document.getElementById('val-max-name').textContent = maxItem.name;
 }
 
-// ─────────────────────────────────────────────
-// 滚动 Ticker
-// ─────────────────────────────────────────────
-function updateTicker() {
-    if (!STATE.data.length) return;
-    const items = STATE.data.map(d => {
+// ─────────────────────────────────────────────────────────────
+// Ticker
+// ─────────────────────────────────────────────────────────────
+function renderTicker() {
+    const items = S.data.map(d => {
         const color = d.premium > 0 ? '#4ade80' : '#f87171';
-        const src = (d.domSource === 'live' && d.intlSource === 'live') ? '🟢' : '🟡';
-        return `${src} <span style="color:#94a3b8">${d.name}</span> 溢价: <span style="color:${color};font-weight:600">${d.premium>0?'+':''}${d.premium.toFixed(2)}%</span> | 国内: ${d.domPrice.toLocaleString('zh-CN',{maximumFractionDigits:2})} | 国际: ${d.intlPrice.toFixed(2)}`;
+        const dot   = d.intlSrc === 'live' ? '🟢' : '🔴';
+        return `${dot} <span style="color:#94a3b8">${d.name}</span> <span style="color:${color};font-weight:600">${d.premium>0?'+':''}${d.premium.toFixed(2)}%</span> 国内:${d.domPrice.toLocaleString('zh-CN',{maximumFractionDigits:1})} 国际:${d.intlPrice.toFixed(2)}`;
     });
-    const text = items.join('&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;');
-    const ticker = document.getElementById('ticker');
-    ticker.innerHTML = text + '&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;' + text;
+    const txt = items.join(' &nbsp;·&nbsp; ');
+    document.getElementById('ticker').innerHTML = txt + ' &nbsp;·&nbsp; ' + txt;
 }
 
-// ─────────────────────────────────────────────
-// 过滤 & 排序
-// ─────────────────────────────────────────────
-function filterCategory(cat) {
-    STATE.filter = cat;
-    document.querySelectorAll('.filter-btn').forEach(b => {
-        const active = b.dataset.cat === cat;
-        b.className = active
-            ? 'filter-btn px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium'
-            : 'filter-btn px-4 py-2 rounded-lg bg-slate-700 text-slate-300 text-sm font-medium hover:bg-slate-600';
-    });
-    renderGrid();
-}
-function sortData(v) { STATE.sort = v; renderGrid(); }
-
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
 // 图表
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+const CHART_IDS    = ['gold','crude-oil','copper','soybean','csi300','silver'];
+const CHART_COLORS = ['#f59e0b','#60a5fa','#f97316','#4ade80','#a78bfa','#94a3b8'];
+
 function initChart() {
     const ctx = document.getElementById('premiumChart').getContext('2d');
-    STATE.chart = new Chart(ctx, {
+    S.chart = new Chart(ctx, {
         type: 'line',
         data: { labels: [], datasets: [] },
         options: {
             responsive: true, maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
+            interaction: { mode:'index', intersect:false },
             plugins: {
-                legend: { labels: { color: '#94a3b8', boxWidth: 12, font: { size: 11 } } },
-                tooltip: { backgroundColor: '#1e293b', borderColor: '#475569', borderWidth: 1, titleColor: '#e2e8f0', bodyColor: '#94a3b8' }
+                legend: { labels: { color:'#94a3b8', boxWidth:12, font:{size:11} } },
+                tooltip: { backgroundColor:'#1e293b', borderColor:'#475569', borderWidth:1, titleColor:'#e2e8f0', bodyColor:'#94a3b8' }
             },
             scales: {
-                y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 10 } }, title: { display: true, text: '溢价率 %', color: '#64748b' } },
-                x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 10 }, maxTicksLimit: 10 } }
+                y: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10}}, title:{display:true,text:'溢价率 %',color:'#64748b'} },
+                x: { grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#64748b',font:{size:10},maxTicksLimit:10} }
             }
         }
     });
 }
 
-const CHART_COLORS = ['#60a5fa','#a78bfa','#4ade80','#fb923c','#f472b6','#34d399'];
-const CHART_IDS    = ['gold','copper','crude-oil','soybean','csi300','silver'];
-
-function updateChart() {
-    const history = STATE.premiumHistory;
+function renderChart() {
     const allTimes = [...new Set(
-        CHART_IDS.flatMap(id => (history[id]||[]).map(p => p.t.toLocaleTimeString('zh-CN')))
+        CHART_IDS.flatMap(id => (S.history[id]||[]).map(p => p.t.toLocaleTimeString('zh-CN')))
     )].slice(-30);
-
-    STATE.chart.data.labels = allTimes;
-    STATE.chart.data.datasets = CHART_IDS.map((id, i) => {
-        const pair = PAIRS.find(p => p.id === id);
-        const pts  = (history[id] || []).slice(-30);
+    S.chart.data.labels = allTimes;
+    S.chart.data.datasets = CHART_IDS.map((id,i) => {
+        const pair = PAIRS.find(p=>p.id===id);
+        const pts  = (S.history[id]||[]).slice(-30);
         return {
             label: pair?.name || id,
-            data: pts.map(p => +p.v.toFixed(3)),
+            data:  pts.map(p => +p.v.toFixed(3)),
             borderColor: CHART_COLORS[i],
-            backgroundColor: CHART_COLORS[i] + '18',
-            borderWidth: 1.5, fill: true, tension: 0.4,
-            pointRadius: 0, pointHoverRadius: 4
+            backgroundColor: CHART_COLORS[i]+'18',
+            borderWidth:1.5, fill:true, tension:0.4,
+            pointRadius:0, pointHoverRadius:4
         };
     });
-    STATE.chart.update('none');
+    S.chart.update('none');
 }
 
 function changeTimeframe(tf) {
     document.querySelectorAll('.time-btn').forEach(b => {
         b.className = 'time-btn px-3 py-1 rounded text-xs ' +
-            (b.textContent === tf ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300');
+            (b.textContent===tf ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300');
     });
-    // 此处仅切换视觉，完整历史数据需要付费 API 支持
-    updateChart();
 }
 
-// ─────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 过滤 & 排序
+// ─────────────────────────────────────────────────────────────
+function setFilter(cat) {
+    S.filter = cat;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+        b.className = 'filter-btn px-4 py-2 rounded-lg text-sm font-medium ' +
+            (b.dataset.cat===cat ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600');
+    });
+    renderGrid();
+}
+function setSort(v) { S.sort = v; renderGrid(); }
+
+// ─────────────────────────────────────────────────────────────
 // 套利计算器
-// ─────────────────────────────────────────────
-function initCalculator() {
+// ─────────────────────────────────────────────────────────────
+function initCalc() {
     const sel = document.getElementById('calc-pair');
     PAIRS.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = `${p.name}（${p.domestic.code} / ${p.international.code}）`;
-        sel.appendChild(opt);
+        const o = document.createElement('option');
+        o.value = p.id;
+        o.textContent = `${p.name}（${p.dom.exchange} / ${p.intl.exchange}）`;
+        sel.appendChild(o);
     });
-    updateCalc();
+    calcUpdate();
 }
 
-function updateCalc() {
+function calcUpdate() {
     const id   = document.getElementById('calc-pair').value;
-    const pair = PAIRS.find(p => p.id === id);
+    const pair = PAIRS.find(p=>p.id===id);
     if (!pair) return;
-    const fxRate = pair.fxKey === 'JPY' ? STATE.fx.JPY : STATE.fx.CNY;
-    document.getElementById('calc-fx').textContent    = fxRate.toFixed(4);
-    document.getElementById('calc-ratio').textContent = `×${pair.conversion >= 1 ? pair.conversion.toFixed(2) : pair.conversion.toFixed(6)}`;
-    document.getElementById('calc-dom-unit').textContent  = `(${pair.domestic.unit})`;
-    document.getElementById('calc-intl-unit').textContent = `(${pair.international.unit})`;
-    document.getElementById('calc-desc').textContent = pair.description;
-    // 自动填入当前行情
-    const cur = STATE.data.find(d => d.id === id);
+    const fxRate = pair.fxKey==='JPY' ? (S.fx.CNY/S.fx.JPY) : S.fx.CNY;
+    document.getElementById('calc-out-fx').textContent    = fxRate.toFixed(4);
+    document.getElementById('calc-out-ratio').textContent = `×${pair.conversion>=1?pair.conversion.toFixed(2):pair.conversion.toFixed(5)}`;
+    document.getElementById('calc-dom-unit').textContent  = `(${pair.dom.unit})`;
+    document.getElementById('calc-intl-unit').textContent = `(${pair.intl.unit})`;
+    document.getElementById('calc-desc').textContent      = pair.desc;
+    const cur = S.data.find(d=>d.id===id);
     if (cur) {
-        document.getElementById('calc-domestic').value      = cur.domPrice.toFixed(2);
-        document.getElementById('calc-international').value = cur.intlPrice.toFixed(4);
-        calculateArbitrage();
+        document.getElementById('calc-dom').value  = cur.domPrice.toFixed(2);
+        document.getElementById('calc-intl').value = cur.intlPrice.toFixed(4);
+        calcRun();
     }
 }
 
-function selectForCalc(id) {
+function calcFill(id) {
     document.getElementById('calc-pair').value = id;
-    updateCalc();
-    document.getElementById('calc-pair').closest('.glass').scrollIntoView({ behavior: 'smooth' });
+    calcUpdate();
+    document.querySelector('#calc-pair').closest('.glass').scrollIntoView({ behavior:'smooth' });
 }
 
-function calculateArbitrage() {
+function calcRun() {
     const id   = document.getElementById('calc-pair').value;
-    const pair = PAIRS.find(p => p.id === id);
-    const dom  = parseFloat(document.getElementById('calc-domestic').value);
-    const intl = parseFloat(document.getElementById('calc-international').value);
-    if (!pair || !dom || !intl) return;
-    const fxRate     = pair.fxKey === 'JPY' ? STATE.fx.JPY : STATE.fx.CNY;
-    const converted  = intl * fxRate * pair.conversion;
-    const premium    = ((dom - converted) / converted) * 100;
-    const el = document.getElementById('calc-premium');
+    const pair = PAIRS.find(p=>p.id===id);
+    const dom  = parseFloat(document.getElementById('calc-dom').value);
+    const intl = parseFloat(document.getElementById('calc-intl').value);
+    if (!pair||!dom||!intl) return;
+    const fxRate    = pair.fxKey==='JPY' ? (S.fx.CNY/S.fx.JPY) : S.fx.CNY;
+    const converted = intl * fxRate * pair.conversion;
+    const premium   = ((dom - converted) / converted * 100);
+    const el = document.getElementById('calc-out-premium');
     el.textContent = (premium>0?'+':'') + premium.toFixed(3) + '%';
     el.className   = 'text-2xl font-bold mono ' + (premium>0?'text-green-400':'text-red-400');
-    const sig = document.getElementById('calc-signal');
-    if (Math.abs(premium) < 0.3) {
-        sig.textContent = '无明显机会'; sig.className = 'text-2xl font-bold text-slate-400';
-    } else if (premium > 2) {
-        sig.textContent = '正向套利 ▲'; sig.className = 'text-2xl font-bold text-green-400';
-    } else if (premium > 0) {
-        sig.textContent = '轻微正溢价'; sig.className = 'text-2xl font-bold text-green-300';
-    } else if (premium < -2) {
-        sig.textContent = '反向套利 ▼'; sig.className = 'text-2xl font-bold text-red-400';
-    } else {
-        sig.textContent = '轻微负溢价'; sig.className = 'text-2xl font-bold text-red-300';
-    }
+    const sig = document.getElementById('calc-out-signal');
+    if (Math.abs(premium)<0.3) { sig.textContent='无明显机会'; sig.className='text-2xl font-bold text-slate-400'; }
+    else if (premium>2)  { sig.textContent='正向套利 ▲'; sig.className='text-2xl font-bold text-green-400'; }
+    else if (premium>0)  { sig.textContent='轻微正溢价';  sig.className='text-2xl font-bold text-green-300'; }
+    else if (premium<-2) { sig.textContent='反向套利 ▼'; sig.className='text-2xl font-bold text-red-400'; }
+    else                 { sig.textContent='轻微负溢价';  sig.className='text-2xl font-bold text-red-300'; }
 }
 
-// ─────────────────────────────────────────────
-// 历史走势（弹窗简版）
-// ─────────────────────────────────────────────
-function showHistory(id) {
-    const pair = PAIRS.find(p => p.id === id);
-    const hist = STATE.premiumHistory[id] || [];
-    if (hist.length < 2) {
-        alert(`${pair?.name || id}\n\n数据点不足，请等待几次刷新后再查看走势。`);
-        return;
-    }
-    const avg = hist.reduce((s,p) => s+p.v, 0) / hist.length;
+// ─────────────────────────────────────────────────────────────
+// 历史弹窗
+// ─────────────────────────────────────────────────────────────
+function showHist(id) {
+    const pair = PAIRS.find(p=>p.id===id);
+    const hist = S.history[id]||[];
+    if (hist.length<2) { alert(`${pair?.name}\n\n数据点不足，请等待几次刷新后查看。`); return; }
+    const avg = hist.reduce((s,p)=>s+p.v,0)/hist.length;
     const max = Math.max(...hist.map(p=>p.v));
     const min = Math.min(...hist.map(p=>p.v));
-    const latest = hist[hist.length-1].v;
-    alert(
-        `📊 ${pair?.name || id} 溢价率走势\n\n` +
-        `最新: ${latest>0?'+':''}${latest.toFixed(3)}%\n` +
-        `均值: ${avg>0?'+':''}${avg.toFixed(3)}%\n` +
-        `最高: +${max.toFixed(3)}%\n` +
-        `最低: ${min.toFixed(3)}%\n` +
-        `数据点: ${hist.length} 个\n\n` +
-        `（完整图表功能开发中）`
-    );
-}
-
-// ─────────────────────────────────────────────
-// 刷新按钮状态
-// ─────────────────────────────────────────────
-function setRefreshLoading(loading) {
-    const icon = document.getElementById('refresh-icon');
-    if (loading) icon.classList.add('spin');
-    else icon.classList.remove('spin');
-}
-
-async function refreshAll() {
-    await fetchFxRates();
-    await fetchAllPrices();
+    const cur = hist[hist.length-1].v;
+    alert(`📊 ${pair?.name} 溢价率\n\n当前: ${cur>0?'+':''}${cur.toFixed(3)}%\n均值: ${avg>0?'+':''}${avg.toFixed(3)}%\n最高: ${max.toFixed(3)}%\n最低: ${min.toFixed(3)}%\n记录点: ${hist.length}`);
 }
 </script>
 </body>
